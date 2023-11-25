@@ -25,31 +25,29 @@ client.then(() => {
 
       const albumArtURL = getMediaURLFromID(currentlyPlaying.album.cover);
 
-      const date = new Date();
-      const now = (date.getTime() / 1000) | 0;
-      const remaining = date.setSeconds(
-        date.getSeconds() + (currentlyPlaying.duration - current)
-      );
-
       const paused = state.playbackControls.playbackState == "NOT_PLAYING";
 
-      rpc.setActivity({
-        ...(paused
-          ? {
-              smallImageKey: "paused-icon",
-              smallImageText: "Paused",
-            }
-          : {
-              startTimestamp: now,
-              endTimestamp: remaining,
-            }),
-        details: formatLongString(currentlyPlaying.title),
-        state: formatLongString(
-          "by " + currentlyPlaying.artists.map((a) => a.name).join(", ")
-        ),
-        largeImageKey: albumArtURL,
-        largeImageText: formatLongString(currentlyPlaying.album.title),
-      });
+      if (!paused) {
+        const date = new Date();
+        const now = (date.getTime() / 1000) | 0;
+        const remaining = date.setSeconds(
+          date.getSeconds() + (currentlyPlaying.duration - current)
+        );
+
+        rpc.setActivity({
+          startTimestamp: now,
+          endTimestamp: remaining,
+          details: formatLongString(currentlyPlaying.title),
+          state: formatLongString(
+            "by " + currentlyPlaying.artists.map((a) => a.name).join(", ")
+          ),
+          largeImageKey: albumArtURL,
+          largeImageText: formatLongString(currentlyPlaying.album.title),
+        });
+      } else {
+        // If paused, clear the activity
+        rpc.clearActivity();
+      }
     })
   );
 });
